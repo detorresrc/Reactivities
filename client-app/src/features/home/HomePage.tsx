@@ -1,12 +1,13 @@
 import useModalStore from "@/store/features/modal";
 import useUserStore from "@/store/features/user";
 import { Link } from "react-router-dom"
-import { Container, Header, Segment, Image, Button } from "semantic-ui-react"
+import { Container, Header, Segment, Image, Button, Divider } from "semantic-ui-react"
 import LoginForm from "../auth/LoginForm";
 import RegisterForm from "../auth/RegisterForm";
+import FacebookLogin, { SuccessResponse } from "@greatsumini/react-facebook-login";
 
 const HomePage = () => {
-  const { user } = useUserStore();
+  const { user, facebookLogin, fbLoading } = useUserStore();
   const { openModal } = useModalStore();
 
   return (
@@ -26,6 +27,15 @@ const HomePage = () => {
             <Button size="huge" inverted onClick={() => openModal(<RegisterForm/>)}>
               Register
             </Button>
+            <Divider horizontal inverted>Or</Divider>
+            <FacebookLogin
+              appId="318592247467629"
+              onSuccess={(response: SuccessResponse) => {
+                facebookLogin(response.accessToken);
+                console.log({response});
+              }}
+              className={`ui button facebook huge inverted ${fbLoading ? 'loading' : ''}`}
+            />
           </>
         ) : (
           <>
