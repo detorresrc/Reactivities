@@ -101,7 +101,7 @@ const ActivityForm = () => {
             floated='right'
             type='button'
             content='Cancel'
-            loading={isSubmitting}
+            disabled={isSubmitting}
             onClick={handleCancel}
           />
 

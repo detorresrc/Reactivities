@@ -21,9 +21,13 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateActivity([FromBody]Activity activity)
+        public async Task<ActionResult<Activity>> CreateActivity([FromBody]Activity activity)
         {
-            return HandleResult(await Mediator.Send(new Create.Command{Activity = activity}));
+            var createResult = await Mediator.Send(new Create.Command{Activity = activity});
+            if(!createResult.IsSuccess)
+                return HandleResult(createResult);
+
+            return HandleResult(await Mediator.Send(new Details.Query { id = createResult.Value.Id }));
         }
 
         [Authorize(Policy = "IsActivityHost")]

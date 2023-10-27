@@ -12,7 +12,7 @@ namespace Application.Activities
 {
     public class Create
     {
-        public class Command : IRequest<Result<Unit>>
+        public class Command : IRequest<Result<Activity>>
         {
             public required Activity Activity { get; set; }
         }
@@ -25,7 +25,7 @@ namespace Application.Activities
             }
         } 
 
-        public class Handler:IRequestHandler<Command, Result<Unit>>
+        public class Handler:IRequestHandler<Command, Result<Activity>>
         {
             private readonly DataContext _context;
             private readonly IUserAccessor _userAccessor;
@@ -35,7 +35,7 @@ namespace Application.Activities
                 _context = context;
             }
 
-            public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Result<Activity>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == _userAccessor.GetUsername());
 
@@ -47,13 +47,14 @@ namespace Application.Activities
 
                 request.Activity.Attendees.Add(attendee);
 
-                _context.Activities.Add(request.Activity);
+                var activity = request.Activity;
+                _context.Activities.Add(activity);
                 
                 var result = await _context.SaveChangesAsync() > 0;
 
-                if(!result) return Result<Unit>.Failure("Failed to create activity");
+                if(!result) return Result<Activity>.Failure("Failed to create activity");
 
-                return Result<Unit>.Success(Unit.Value);
+                return Result<Activity>.Success(activity);
             }
         }
     }

@@ -167,6 +167,7 @@ const useActivityStore = create(immer<State & Action>((set, get) => ({
       const newActivity = new Activity(activity);
       newActivity.hostUsername = user!.username;
       newActivity.attendees = [attendee];
+      _addActivityDetails(newActivity);
 
       set(state => {
         const { activityRegistry } = state;
