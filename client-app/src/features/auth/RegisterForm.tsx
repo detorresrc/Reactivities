@@ -24,7 +24,6 @@ const RegisterForm = () => {
         password    : Yup.string().required(),
       })}
       onSubmit={(values, {setErrors}) => register(values).catch(error => {
-        console.log({error})
         setErrors({error});
       })}
       >

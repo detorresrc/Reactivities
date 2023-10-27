@@ -11,7 +11,6 @@ import HomePage from "@/features/home/HomePage";
 import { ToastContainer } from "react-toastify";
 import ModalContainer from "../common/modals/ModalContainer";
 
-
 function App() {
   const location = useLocation();
 

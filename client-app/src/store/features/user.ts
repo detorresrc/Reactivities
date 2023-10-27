@@ -10,6 +10,7 @@ type State = {
   user: User | null
   fbLoading: boolean
   token: string | null
+  refreshTokenTimeout?: NodeJS.Timeout | null
 }
 
 type Action = {
@@ -20,6 +21,9 @@ type Action = {
   setImage: (imageUrl: string) => void
   facebookLogin: (accessToken: string) => Promise<void>
   setToken: (token: string) => void
+  refreshToken: () => Promise<void>
+  startRefreshToken: () => void
+  stopRefreshToken: () => void
 }
 
 const useUserStore = create(
@@ -43,26 +47,26 @@ const useUserStore = create(
           state.user = _user;
           state.token = _user.token;
         });
-
+        get().startRefreshToken();
         useModalStore.getState().closeModal();
         router.navigate('/activities');
       },
 
       register: async (user: UserFormValues) => {
-        const _user = await agent.Account.register(user);
-        set((state) => {
-          state.user = _user;
-          state.token = _user.token;
-        });
+        await agent.Account.register(user);
 
         useModalStore.getState().closeModal();
-        router.navigate('/activities');
+        router.navigate('/account/registration-success?email='+user.email);
       },
       
       logout: () => {
         set((state) => {
           state.user = null;
         });
+
+        const { refreshTokenTimeout } = get();
+        if(refreshTokenTimeout)
+          clearTimeout(refreshTokenTimeout);
 
         router.navigate('/');
       },
@@ -86,6 +90,7 @@ const useUserStore = create(
             state.token = accessToken;
           });
 
+          get().startRefreshToken();
           router.navigate('/activities');
         }catch(error){
           console.log(error);
@@ -94,6 +99,46 @@ const useUserStore = create(
           });
         }
       },
+
+      refreshToken: async () => {
+        try{
+          get().stopRefreshToken();
+
+          const user = await agent.Account.refreshToken();
+          
+          set(state => {
+            state.user = user;
+          });
+          get().startRefreshToken();
+        }catch(error){
+          console.log(error);
+        }
+      },
+
+      startRefreshToken: () => {
+        if(get()?.user==null) return null;
+        const { token } = get().user!;
+        if(!token) return;
+
+        const { refreshTokenTimeout: handler } = get();
+        if(handler) clearTimeout(handler);
+
+        const jwtToken = JSON.parse(atob(token.split('.')[1]));
+        const expires = new Date(jwtToken.exp * 1000);
+        const timeout = expires.getTime() - Date.now() - (30*1000);
+
+        const refreshTokenTimeout = setTimeout(get().refreshToken, timeout);
+        set(state => {
+          state.refreshTokenTimeout = refreshTokenTimeout;
+        })
+      },
+
+      stopRefreshToken: () => {
+        clearTimeout(get().refreshTokenTimeout!);
+        set(state => {
+          state.refreshTokenTimeout = null;
+        })
+      }
 
      })),
      {

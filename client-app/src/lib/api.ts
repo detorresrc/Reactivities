@@ -47,7 +47,7 @@ API.interceptors.response.use(async (response) => {
   
   return response;
 }, (error: AxiosError) => {
-  const {data, status, config} = error.response as AxiosResponse;
+  const {data, status, config, headers} = error.response as AxiosResponse;
   const errorStore = useErrorStore.getState();
 
   switch(status){
@@ -68,7 +68,13 @@ API.interceptors.response.use(async (response) => {
       }
       break;
     case 401:
-      toast.error('Unauthorized!');
+      console.log({headers});
+      if(status === 401 && headers['www-authenticate']?.startsWith('Bearer error="invalid_token"')){
+        useUserStore.getState().logout();
+        toast.error('Session expired- please login again!');
+      }else{
+        toast.error('Unauthorized!');
+      }
       break;
     case 403:
       toast.error("Forbidden!");

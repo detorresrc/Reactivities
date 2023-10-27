@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Domain;
 using Microsoft.IdentityModel.Tokens;
@@ -9,9 +10,11 @@ namespace API.Services
     public class TokenService
     {
         private readonly IConfiguration _config;
+        private readonly ILogger<TokenService> _logger;
 
-        public TokenService(IConfiguration config)
+        public TokenService(IConfiguration config, ILogger<TokenService> logger)
         {
+      _logger = logger;
             _config = config;
         }
 
@@ -28,7 +31,7 @@ namespace API.Services
 
             var tokenDescriptor = new SecurityTokenDescriptor{
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(1),
                 SigningCredentials = creds
             };
 
@@ -37,6 +40,18 @@ namespace API.Services
             return tokenHandler.WriteToken(
                 tokenHandler.CreateToken(tokenDescriptor)
             );
+        }
+
+        public RefreshToken GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(randomNumber)
+            };
         }
     }
 }

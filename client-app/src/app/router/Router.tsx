@@ -8,6 +8,8 @@ import NotFound from "@/features/errors/NotFound";
 import ServerError from "@/features/errors/ServerError";
 import ProfilePage from "@/features/profiles/ProfilePage";
 import RequireAuth from "./RequireAuth";
+import RegistrationSuccess from "@/features/users/RegistrationSuccess";
+import ConfirmEmail from "@/features/users/ConfirmEmail";
 
 export const routes: RouteObject[] = [
   {
@@ -43,6 +45,14 @@ export const routes: RouteObject[] = [
             element: <TestError/>
           },
         ]
+      },
+      {
+        path: '/account/registration-success',
+        element: <RegistrationSuccess/>
+      },
+      {
+        path: '/account/verifyEmail',
+        element: <ConfirmEmail/>
       },
       {
         path: 'not-found',

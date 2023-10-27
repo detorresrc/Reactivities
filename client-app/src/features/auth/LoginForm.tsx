@@ -13,8 +13,8 @@ const LoginForm = () => {
         password: '',
         error: null
       }}
-      onSubmit={(values, {setErrors}) => login(values).catch(_ => {
-        setErrors({error: 'Invalid email or password'});
+      onSubmit={(values, {setErrors}) => login(values).catch(error => {
+        setErrors({error: error.request.responseText});
       })}
       >
         {({handleSubmit, isSubmitting, errors}) => (

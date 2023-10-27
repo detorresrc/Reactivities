@@ -3,6 +3,7 @@ using Application.Core;
 using Application.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.EmailSender;
 using Infrastructure.Photos;
 using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,11 @@ namespace API.Extensions
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()
-                        .WithOrigins("https://localhost:3000");
+                        .WithExposedHeaders("WWW-Authenticate", "Pagination")
+                        .WithOrigins(
+                            "https://localhost:3000", 
+                            "https://reactivities.local:3000"
+                        );
                 });
             });
             services.AddMediatR(cfg =>cfg.RegisterServicesFromAssemblies(typeof(Application.Activities.List.Handler).Assembly));
@@ -41,6 +46,8 @@ namespace API.Extensions
             services.AddHttpContextAccessor();
             services.AddScoped<IUserAccessor, UserAccessor>();
 
+            services.AddScoped<IEmailSender, MailgunEmailSender>();
+            
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
             services.Configure<CloudinarySettings>(config.GetSection("Cloudinary"));
 
